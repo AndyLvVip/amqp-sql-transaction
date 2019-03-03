@@ -1,0 +1,36 @@
+server:
+  port: 8880
+spring:
+  cloud:
+    stream:
+      bindings:
+        input:
+          group: amqp-sql-tx-consumer
+          destination: amqp-sql-tx
+          content-type: application/json
+          consumer:
+            max-attempts: 1
+        output:
+          destination: amqp-sql-tx
+          content-type: application/json
+      rabbit:
+        bindings:
+          output:
+            producer:
+              transacted: true
+          input:
+            consumer:
+              auto-bind-dlq: true
+              dlq-dead-letter-exchange: amqp.sql-tx.amqp-sql-tx-consumer
+  rabbitmq:
+    host: 127.0.0.1
+    port: 5672
+    username: guest
+    password: guest
+  jpa:
+    generate-ddl: false
+    show-sql: true
+  datasource:
+    url: jdbc:mysql://127.0.0.1:3306/amqp_sql_tx
+    username: andy
+    password: password
