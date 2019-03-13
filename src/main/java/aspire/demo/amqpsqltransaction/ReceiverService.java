@@ -3,6 +3,9 @@ package aspire.demo.amqpsqltransaction;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.cloud.stream.annotation.StreamListener;
 import org.springframework.cloud.stream.messaging.Processor;
+import org.springframework.context.annotation.Bean;
+import org.springframework.integration.annotation.ServiceActivator;
+import org.springframework.messaging.Message;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,18 +13,17 @@ import org.springframework.transaction.annotation.Transactional;
 @Slf4j
 public class ReceiverService {
 
-    private final AmqpSqlTxRepository amqpSqlTxRepository;
 
-    public ReceiverService(AmqpSqlTxRepository amqpSqlTxRepository) {
-        this.amqpSqlTxRepository = amqpSqlTxRepository;
+    private final MessageHandler messageHandler;
+
+
+    public ReceiverService(MessageHandler messageHandler) {
+        this.messageHandler = messageHandler;
     }
 
     @StreamListener(Processor.INPUT)
     @Transactional
-    public void receive(String message) {
-        log.info("receive message:{}" + message);
-        AmqpSqlTx amqpSqlTx = amqpSqlTxRepository.findById(message).get();
-        amqpSqlTxRepository.delete(amqpSqlTx);
-        throw new RuntimeException("Not receive test");
+    public void receive(Message<String> message) {
+        messageHandler.handleMessage(message);
     }
 }
